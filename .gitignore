@@ -1,0 +1,18 @@
+# MIMIC data is under the PhysioNet DUA: never commit it. No trailing slash, so a symlink named data is ignored as well.
+/data
+/logs
+
+# Tables, arrays and weights, wherever they are: an embeddings file such as my_model.npz holds draw IDs.
+*.npz
+*.npy
+*.csv
+*.csv.gz
+*.pkl
+*.pt
+
+.venv/
+.venv-torch/
+__pycache__/
+.DS_Store
+*.egg-info/
+build/

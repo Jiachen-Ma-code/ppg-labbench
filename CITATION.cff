@@ -1,0 +1,12 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+type: software
+title: "PPG-LabBench: a benchmark of photoplethysmography windows paired with blood laboratory values"
+version: 1.0.0
+authors:
+  - family-names: Ma
+    given-names: Jiachen
+    affiliation: Independent Researcher
+license: MIT
+repository-code: "https://github.com/Jiachen-Ma-code/ppg-labbench"
+date-released: 2026-11-03

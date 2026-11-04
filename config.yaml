@@ -1,0 +1,74 @@
+# All pipeline parameters live here. Each stage copies the parameters it used into
+# its manifest.json, so every output can be traced back to the exact settings.
+
+wfdb_db: mimic3wdb-matched/1.0
+fs: 125                      # MIMIC-III waveform sampling rate (Hz)
+
+creatinine:
+  itemid: 50912              # LABEVENTS: Creatinine, blood
+  valid_range_mgdl: [0.1, 20]
+
+s1_scan:
+  workers: 8
+
+s2_match:
+  # A draw joins group A if a PLETH-containing record overlaps [t - h, t + h]
+  search_half_window_min: 10
+  # Draws passed on to S3: at most this many per subject, evenly spaced in time, so a few
+  # long-stay patients do not dominate the dataset. Group A itself keeps all draws.
+  max_draws_per_subject: 10
+
+s3_fetch:
+  half_window_min: 10        # store PLETH over [t - 10 min, t + 10 min], NaN where absent
+  workers: 8
+
+s4_sqi:
+  bandpass_hz: [0.5, 8.0]
+  epoch_s: 10                # SQI is computed per 10 s epoch
+  window_min: 5              # analysis window = best contiguous 5 min near the draw
+  flat_run_s: 0.2            # constant runs >= this long count as flat / saturated
+  max_flat_frac: 0.10
+  hr_range_bpm: [30, 200]
+  peak_prominence_frac: 0.3  # of the epoch's 5-95 percentile range
+  min_template_corr: 0.86    # beat-to-template correlation (Orphanidou et al. 2015)
+  workers: 6
+
+s5_select:
+  min_window_score: 0.8      # fraction of good epochs in the best 5 min window
+
+s6_dataset:
+  lab_window_h: 12           # Hb / BUN: nearest value within ± this many hours of the draw
+  labs: {hb_gdl: 51222, bun_mgdl: 51006}
+  egfr_ckd_threshold: 60     # eGFR (CKD-EPI 2021, race-free) < 60 -> label ckd_egfr
+  vaso_cv_window_h: 1        # CareVue has no end times: "on" if a positive rate or amount was charted in the preceding hour
+  # Vasopressors / inotropes (MetaVision ITEMIDs, then CareVue ITEMIDs)
+  vaso_mv: [221906, 221289, 221749, 222315, 221662, 221653, 221986]
+  vaso_cv: [30047, 30120, 30044, 30119, 30309, 30127, 30128, 30051, 30043, 30307, 30042, 30306, 30125]
+
+benchmark:
+  lab_window_min: 60         # lab value = nearest measurement within ± this many minutes of the window centre
+  window_half_min: 10        # PPG window = [t - 10, t + 10] min (S3); LOCF must precede the window start
+  beat_max_iter: 75          # boosting rounds of the beat model, one value for all labs: ppglabbench.tune_beat
+  labs:                      # name: [ITEMID, abnormal rule]  (rule: "<x", ">x", ">=x"; "anaemia" = sex-specific)
+    bun: [51006, ">20"]
+    sodium: [50983, "<135"]
+    potassium: [50971, ">5.0"]
+    bicarbonate: [50882, "<22"]
+    calcium: [50893, "<8.4"]   # total calcium, mg/dL
+    glucose: [50931, ">=180"]
+    haemoglobin: [51222, "anaemia"]
+    platelets: [51265, "<150"]
+    wbc: [51301, ">12"]
+    inr: [51237, ">1.5"]
+    ptt: [51275, ">40"]
+    lactate: [50813, ">2.0"]
+    albumin: [50862, "<3.5"]
+    ast: [50878, ">40"]
+    alt: [50861, ">40"]
+  blood_gas: {potassium: 50822, glucose: 50809, bicarbonate: 50804, haemoglobin: 50811, sodium: 50824}
+  split: [0.70, 0.15, 0.15]  # train / val / test by subject, assigned by a salted hash of subject_id
+  split_salt: "ppg-labbench-v1"
+  splits_sha256: "bb414e90a794bdf90f91a0ffbe1d4207a2c295d4461befeb76d529ba9c44386d"   # of data/benchmark/mimic_splits.csv (subject IDs stay in the credentialed release)
+  plan_sha256: "8b7c5d617da090eb1affb45ce7bc9caf449808a67d2f26ce94274adf49f1be64"   # of data/benchmark/results/confirmatory_plan.json, set in a commit before the test split is opened: confirmatory run refuses any other plan
+  dev_exclusion: s5_groupB_partial   # subjects used for method development never enter the test set
+  test_opened: true         # set to true in a commit once the confirmatory evaluation of the test split is done; `evaluate --eval test` reads it

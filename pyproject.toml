@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ppglabbench"
+version = "0.1.0"
+description = "A benchmark of PPG windows paired with blood laboratory values, from MIMIC-III and VitalDB"
+readme = "README.md"
+requires-python = ">=3.9"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Jiachen Ma" }]
+dependencies = [
+    "joblib>=1.5.3",
+    "matplotlib>=3.9.4",
+    "numpy>=2.0.2",
+    "pandas>=2.3.3",
+    "pyyaml>=6.0.3",
+    "scikit-learn>=1.6.1",
+    "scipy>=1.13.1",
+    "threadpoolctl>=3.7.0",
+    "wfdb>=4.3.1",
+]
+
+[project.optional-dependencies]
+embed = ["torch>=2.2.2"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"ppglabbench.features" = ["treatment_items.yaml"]

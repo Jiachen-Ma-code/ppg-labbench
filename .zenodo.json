@@ -1,0 +1,19 @@
+{
+  "title": "PPG-LabBench: a benchmark of photoplethysmography windows paired with blood laboratory values",
+  "upload_type": "software",
+  "description": "Code of PPG-LabBench, a benchmark of photoplethysmography (PPG) windows paired with blood laboratory values, from MIMIC-III (intensive care) and VitalDB (operating room). It asks how much the pulse waveform adds to what is already known at the bedside. The code builds the windows and labels, computes PPG features and embeddings, fits reference baselines next to PPG models, and runs an evaluation protocol with a permuted-PPG null control, a positive control and a test split that is evaluated once. The record holds code and documents only, no data: each data source has its own terms, listed in DATA.md.",
+  "creators": [
+    {
+      "name": "Ma, Jiachen",
+      "affiliation": "Independent Researcher"
+    }
+  ],
+  "access_right": "open",
+  "license": "MIT",
+  "keywords": [
+    "photoplethysmography",
+    "benchmark",
+    "laboratory values",
+    "MIMIC-III"
+  ]
+}

@@ -7,6 +7,8 @@ authors:
   - family-names: Ma
     given-names: Jiachen
     affiliation: Independent Researcher
+  - family-names: Huang
+    given-names: Ziyun
 license: MIT
 repository-code: "https://github.com/Jiachen-Ma-code/ppg-labbench"
 date-released: 2026-11-03

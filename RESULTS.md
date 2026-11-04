@@ -12,7 +12,7 @@ Models: pulse-beat features, two pretrained encoders and a small end-to-end CNN,
 - **With previous lab values in the base (`full`), almost nothing remains:** mean gain +0.0002, upper bound +0.0017.
 - **Over the smaller `monitor` base, a bound of +0.01 is not shown:** mean gain +0.0106, upper bound +0.0154. The chain stopped there, so `acuity` was not tested.
 - **A mean can hide one lab.** Urea nitrogen (BUN) shows a gain above 0 over `now`, +0.0138 (simultaneous interval +0.0032, +0.0245), not shown to exceed +0.01, so this is no practical claim. In bicarbonate and calcium the score holds information beyond the base, with no gain in discrimination shown. The other seven labs clear no level.
-- **Named value hypotheses.** Haemoglobin clears the first level only, and with PaPaGei, which was pretrained on these cohorts, so it may be optimistic. [PROTOCOL.md](PROTOCOL.md) asks for the other candidates beside such a pick; this report does not print them. Lactate clears no level.
+- **Named value hypotheses.** Haemoglobin clears the first level only, and with PaPaGei, which was pretrained on these cohorts, so it may be optimistic. The other candidates are beside it [below](#named-hypotheses-the-lab-value-over-now). Lactate clears no level.
 
 These results give no support for replacing or triggering a draw with these models in this setting. They do not show that PPG holds no such information. They are from one ICU database.
 
@@ -42,12 +42,32 @@ These results give no support for replacing or triggering a draw with these mode
 
 L1: the score carries information beyond the base. L2: the stack gains discrimination. L3: gain above +0.01.
 
+All three labs that clear a level have the CNN as their model. In BUN the other models gain less over `now` and are not tested: beat +0.0097, PaPaGei +0.0082, pulse rate +0.0069, Pulse-PPG +0.0042. Over `now` + the rate score, the CNN keeps +0.0083 (+0.0039, +0.0128).
+
 ## Named hypotheses, the lab value over `now`
 
 | Lab | Model | n | Subjects | R² base | ΔR² | SE | Partial R² | Simultaneous interval | z1 | z2 | Levels cleared |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | lactate | beat | 373 | 196 | 0.239 | +0.0188 | 0.0127 | +0.0248 | -0.0167, +0.0544 | 2.26 | 1.49 | 0 |
 | haemoglobin | papagei | 2002 | 715 | 0.222 | +0.0134 | 0.0054 | +0.0172 | -0.0016, +0.0285 | 4.41 | 2.51 | 1 |
+
+Beside the haemoglobin pick, ΔR² with unadjusted 95% intervals, not tested: PaPaGei +0.0134 (+0.0030, +0.0239), beat +0.0078 (-0.0017, +0.0182), Pulse-PPG +0.0069 (-0.0011, +0.0149), pulse rate +0.0056 (+0.0002, +0.0117). The CNN has no head for the value. The report printed by the confirmatory run leaves these out; they come from the ladder below.
+
+## The full ladder
+
+Exploratory. Mean AUROC of each base over the 10 Family A labs, and the mean gain of each model stacked on that base. PPG alone reaches a mean AUROC of 0.584 with pulse rate, 0.592 with beat morphology, 0.584 with PaPaGei, 0.581 with Pulse-PPG and 0.621 with the CNN.
+
+| Base | Mean AUROC of the base | Pulse rate | Beat morphology | PaPaGei | Pulse-PPG | CNN |
+|---|---|---|---|---|---|---|
+| `age_sex` | 0.572 | +0.0362 | +0.0387 | +0.0330 | +0.0368 | +0.0590 |
+| `acuity` | 0.628 | +0.0178 | +0.0178 | +0.0144 | +0.0142 | +0.0255 |
+| `monitor` | 0.648 | +0.0062 | +0.0073 | +0.0048 | +0.0039 | +0.0124 |
+| `now` | 0.705 | +0.0022 | +0.0025 | +0.0024 | +0.0020 | +0.0057 |
+| `locf` | 0.902 | +0.0005 | +0.0004 | +0.0011 | +0.0011 | +0.0013 |
+| `hist` | 0.906 | +0.0005 | +0.0005 | +0.0012 | +0.0011 | +0.0014 |
+| `full` | 0.910 | +0.0001 | +0.0000 | +0.0004 | +0.0003 | +0.0003 |
+
+The gain shrinks as the base learns more, and the previous value alone does most of the work. With each subject given another subject's PPG, over 100 permutations, the mean gain over `now` is about -0.0003 for every model. With boosting on both sides, so that no gain can come from the class of model, beat features add +0.0016 on average.
 
 ## Within-patient tracking
 
@@ -64,6 +84,18 @@ Most of the association lies between patients. Within patients it is weak, thoug
 
 As controls, the beat score's within-patient r reaches 0.96 for monitor heart rate and 0.44 for arterial mean pressure.
 
+## Centred window and VitalDB
+
+Exploratory. Mean gain in AUROC over the bedside base. Neither run has the CNN, which exists for MIMIC's `pre` window only. The centred window is the best 5 min around the draw, so part of its signal comes after the sample. VitalDB has its own bedside base and is exploratory because its cases were used during development.
+
+| Run | Labs | Beat morphology | PaPaGei | Pulse-PPG | Pulse rate |
+|---|---|---|---|---|---|
+| MIMIC, primary window | 10 | +0.0025 | +0.0024 | +0.0020 | +0.0022 |
+| MIMIC, centred window | 10 | +0.0034 | +0.0034 | +0.0016 | +0.0021 |
+| VitalDB, test split | 12 | +0.0028 | -0.0015 | +0.0014 | +0.0027 |
+
+Neither run changes the reading above. In BUN the centred window agrees, with beat morphology at +0.0112 (+0.0048, +0.0178). VitalDB does not show that gain: its largest in BUN is +0.0026.
+
 ## Files
 
 | File | Content |
@@ -72,6 +104,9 @@ As controls, the beat score's within-patient r reaches 0.96 for monitor heart ra
 | [results/results.json](results/results.json) | the same numbers, for reading by code |
 | [results/confirmatory_plan.json](results/confirmatory_plan.json) | the frozen plan |
 | [results/tracking_report.md](results/tracking_report.md) | the within-patient tracking report |
+| [results/baselines_report.md](results/baselines_report.md) | the full ladder: every base and model, AUROC, AUPRC, R² and MAE, subgroups and the null control |
+| [results/baselines_centered_report.md](results/baselines_centered_report.md) | the same for the centred window, without the CNN |
+| [results/vitaldb_report.md](results/vitaldb_report.md) | VitalDB, exploratory |
 | [results/operating_report.md](results/operating_report.md) | size and power, by simulation on train and validation rows |
 
 The test split may now be used by other models: `benchmark.test_opened` is `true`.

@@ -49,6 +49,21 @@ L1: the score carries information beyond the base. L2: the stack gains discrimin
 | lactate | beat | 373 | 196 | 0.239 | +0.0188 | 0.0127 | +0.0248 | -0.0167, +0.0544 | 2.26 | 1.49 | 0 |
 | haemoglobin | papagei | 2002 | 715 | 0.222 | +0.0134 | 0.0054 | +0.0172 | -0.0016, +0.0285 | 4.41 | 2.51 | 1 |
 
+## Within-patient tracking
+
+Secondary and descriptive. Means over the 10 Family A labs, with subject-bootstrap 95% intervals. With no alignment to the patient's course, within-patient r is 0, the share of changes in the same direction 0.500 and the AUROC 0.500.
+
+| Model | Pooled r | Between patients r | Within patients r | Change in same direction | AUROC, pairs within a patient |
+|---|---|---|---|---|---|
+| CNN | 0.200 (0.175, 0.224) | 0.244 (0.210, 0.280) | 0.079 (0.055, 0.101) | 0.516 (0.507, 0.527) | 0.558 (0.534, 0.583) |
+| Beat morphology | 0.164 (0.144, 0.183) | 0.214 (0.184, 0.245) | 0.068 (0.048, 0.089) | 0.520 (0.511, 0.528) | 0.541 (0.519, 0.562) |
+| PaPaGei | 0.147 (0.126, 0.167) | 0.188 (0.156, 0.223) | 0.059 (0.039, 0.078) | 0.510 (0.500, 0.519) | 0.537 (0.514, 0.559) |
+| Pulse-PPG | 0.137 (0.115, 0.158) | 0.184 (0.151, 0.217) | 0.044 (0.023, 0.062) | 0.501 (0.493, 0.510) | 0.534 (0.510, 0.555) |
+
+Most of the association lies between patients. Within patients it is weak, though above its null. Only 17.2% of subjects have both a normal and an abnormal result of a lab, on average, so few patients can show tracking in AUROC: shuffling the CNN's scores within patients lowers pooled AUROC by 0.015 overall and by 0.037 among those subjects.
+
+As controls, the beat score's within-patient r reaches 0.96 for monitor heart rate and 0.44 for arterial mean pressure.
+
 ## Files
 
 | File | Content |
@@ -56,6 +71,7 @@ L1: the score carries information beyond the base. L2: the stack gains discrimin
 | [results/report.md](results/report.md) | the full report, with secondary and descriptive rows |
 | [results/results.json](results/results.json) | the same numbers, for reading by code |
 | [results/confirmatory_plan.json](results/confirmatory_plan.json) | the frozen plan |
+| [results/tracking_report.md](results/tracking_report.md) | the within-patient tracking report |
 | [results/operating_report.md](results/operating_report.md) | size and power, by simulation on train and validation rows |
 
 The test split may now be used by other models: `benchmark.test_opened` is `true`.
